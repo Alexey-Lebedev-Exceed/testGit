@@ -1,4 +1,4 @@
-let allTasks = [];
+let allTasks = JSON.parse(localStorage.getItem('tasks')) || [];
 let valueInput = '';
 let input = null;
 let tempIndex = -1;//temporary index for the ability to edit text in the task
@@ -6,14 +6,20 @@ let temp = '';
 
 //page load actions
 //loading input
-window.onload = function init () {
+window.onload = async function init () {
   input = document.getElementById('add-task');
   input.addEventListener('change', updateValue);
   input.addEventListener('keyup', keyPress);
+  const response = await fetch('http://localhost:8000/allTasks', {
+    method: 'GET'
+  });
+  let result = await response.json();
+  allTasks = result.data;
+  render();
 }
 
 //loading add button
-onClickButton = () => {
+onClickButton = async () => {
   if(input.value === ''){
     alert("Недопустимое значение");
   } else {
@@ -21,6 +27,20 @@ onClickButton = () => {
       text: valueInput,
       isCheck: false
     });
+    const response = await fetch('http://localhost:8000/createTask', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json;charset=utf-8',
+        'Access-Control-Allow-Origin': '*'
+      },
+      body: JSON.stringify({
+        text: valueInput,
+        isCheck: false
+      })
+    });
+    let result = await response.json();
+    allTasks = result.data;
+    localStorage.setItem('tasks', JSON.stringify(allTasks));
     //zeroing the value of the variable and the value of the input
     valueInput = '';
     input.value = '';
@@ -122,12 +142,18 @@ render = () => {
 //jackdaw state function
 onChangeCheckbox = (index) => {
   allTasks[index].isCheck = !allTasks[index].isCheck;
+  localStorage.setItem('tasks', JSON.stringify(allTasks));
   render();
 }
 
 //delete button function
-removeTask = (index) => {
-  allTasks.splice(index, 1);
+removeTask = async (index) => {
+  localStorage.setItem('tasks', JSON.stringify(allTasks));
+  const response = await fetch(`http://localhost:8000/deleteTask?id=${allTasks[index].id}`, {
+      method: 'DELETE'
+  });
+  let result = await response.json();
+  allTasks = result.data;
   render();
 }
 
@@ -138,12 +164,23 @@ editTask = (index) => {
 }
 
 //save edited text function
-doneTask = () => {
+doneTask = async () => {
   if(!temp.length){
     alert("Недопустимое значение");
   } else {
-  allTasks[tempIndex].text = temp;
-  tempIndex = -1;
+    allTasks[tempIndex].text = temp;
+    localStorage.setItem('tasks', JSON.stringify(allTasks));
+    const response = await fetch('http://localhost:8000/updateTask', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json;charset=utf-8',
+          'Access-Control-Allow-Origin': '*'
+        },
+        body: JSON.stringify(allTasks[tempIndex])
+    });
+    let result = await response.json();
+    allTasks = result.data;
+    tempIndex = -1;
   render();
   }
 }
