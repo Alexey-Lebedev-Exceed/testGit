@@ -1,33 +1,16 @@
-import express from 'express';
-import { Schema as _Schema, connect, model } from 'mongoose';
+const express = require('express');
 const app = express();
-const Schema = _Schema;
+const cors = require ('cors');
+const mongoose = require('mongoose');
 
-const taskScheme = new Schema({
-  text: String,
-  isCheck: Boolean
-});
+const apiRoutes = require('./src/modules/routes/routes');
+
+app.use(cors());
+app.use(express.json());
+app.use("/", apiRoutes);
 
 const url = 'mongodb+srv://Alexey:restart987@cluster0.nsbyf.mongodb.net/TestEducationBD?retryWrites=true&w=majority'
-connect(url, {useNewUrlParser: true, useUnifiedTopology: true});
-
-const Task = model('tasks', taskScheme);
-
-app.get('/', (req, res) => {
-  const task = new Task({
-    text: 'First task',
-    isCheck: false
-  });
-  task.save().then(result => {
-    res.send(result);
-  }).catch(err => console.log(err))
-});
-
-app.get('/paramRequest', (req, res) => {
-  Task.find().then(result => {
-    res.send({data:result});
-  });
-});
+mongoose.connect(url, {useNewUrlParser: true, useUnifiedTopology: true});
 
 app.listen(8800, () => {
   console.log('Example app listening on port 8800');
