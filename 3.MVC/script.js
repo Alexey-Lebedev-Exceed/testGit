@@ -1,4 +1,4 @@
-let allTasks = JSON.parse(localStorage.getItem('tasks')) || [];
+let allTasks = [];
 let valueInput = '';
 let input = null;
 let tempIndex = -1;//temporary index for the ability to edit text in the task
@@ -10,11 +10,11 @@ window.onload = async function init () {
   input = document.getElementById('add-task');
   input.addEventListener('change', updateValue);
   input.addEventListener('keyup', keyPress);
-  const response = await fetch('http://localhost:8000/allTasks', {
+  const response = await fetch('http://localhost:8800/allTasks', {
     method: 'GET'
   });
   let result = await response.json();
-  allTasks = result.data;
+  allTasks = result;
   render();
 }
 
@@ -23,11 +23,7 @@ onClickButton = async () => {
   if(input.value === ''){
     alert("Недопустимое значение");
   } else {
-    allTasks.push({
-      text: valueInput,
-      isCheck: false
-    });
-    const response = await fetch('http://localhost:8000/createTask', {
+    const response = await fetch('http://localhost:8800/createTask', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json;charset=utf-8',
@@ -39,8 +35,7 @@ onClickButton = async () => {
       })
     });
     let result = await response.json();
-    allTasks = result.data;
-    localStorage.setItem('tasks', JSON.stringify(allTasks));
+    allTasks.push(result);
     //zeroing the value of the variable and the value of the input
     valueInput = '';
     input.value = '';
@@ -49,8 +44,12 @@ onClickButton = async () => {
 }
 
 //loading the button for deleting all tasks
-resetButton = () => {
+resetAllButton = async () => {
   allTasks = [];
+  const response = await fetch('http://localhost:8800/deleteTasks', {
+    method: 'DELETE'
+  });
+  let result = await response.json();
   render();  
 }
 
@@ -65,7 +64,7 @@ render = () => {
     content.removeChild(content.firstChild);
   }
 
-  //sorting the array to display completed tasks at the bottom
+  // sorting the array to display completed tasks at the bottom
   allTasks.sort((one, two) => {
     if (one.isCheck > two.isCheck) {
       return 1;
@@ -142,18 +141,16 @@ render = () => {
 //jackdaw state function
 onChangeCheckbox = (index) => {
   allTasks[index].isCheck = !allTasks[index].isCheck;
-  localStorage.setItem('tasks', JSON.stringify(allTasks));
   render();
 }
 
 //delete button function
 removeTask = async (index) => {
-  localStorage.setItem('tasks', JSON.stringify(allTasks));
-  const response = await fetch(`http://localhost:8000/deleteTask?id=${allTasks[index].id}`, {
+  const response = await fetch(`http://localhost:8800/deleteTask?_id=${allTasks[index]._id}`, {
       method: 'DELETE'
   });
   let result = await response.json();
-  allTasks = result.data;
+  allTasks.splice(index, 1);
   render();
 }
 
@@ -169,8 +166,7 @@ doneTask = async () => {
     alert("Недопустимое значение");
   } else {
     allTasks[tempIndex].text = temp;
-    localStorage.setItem('tasks', JSON.stringify(allTasks));
-    const response = await fetch('http://localhost:8000/updateTask', {
+    const response = await fetch('http://localhost:8800/updateTask', {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json;charset=utf-8',
@@ -179,8 +175,8 @@ doneTask = async () => {
         body: JSON.stringify(allTasks[tempIndex])
     });
     let result = await response.json();
-    allTasks = result.data;
     tempIndex = -1;
+    temp = '';
   render();
   }
 }
