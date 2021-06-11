@@ -12,34 +12,85 @@ function App() {
   const [valueInputShop, setTextShop] = useState('');
   const [valueInputDate, setTextDate] = useState('');
   const [valueInputPrice, setTextPrice] = useState('');
+  const [valueTempInputShop, setTempTextShop] = useState('');
+  const [valueTempInputDate, setTempTextDate] = useState('');
+  const [valueTempInputPrice, setTempTextPrice] = useState('');
   let [tempIndex, setTempIndex] = useState(null);
 
-
-  useEffect( () => {
-    axios.get('http://localhost:7777/allTasks').then(res => {
+  const counter = () => {
+    let value = 0;
+    allTasks.map(item => {
+      value += +item.price
+    })
+    return value
+  }
+  
+  useEffect(async () => {
+    await axios.get('http://localhost:7777/allTasks').then(res => {
       setTasks(res.data);
     });
-  }, [setTasks]);
+  },[]);
+
+  const editTask = ((item, index) => {
+    setTempIndex(index);
+    setTempTextShop(item.shop);
+    setTempTextDate(item.date);
+    setTempTextPrice(item.price);
+
+  })
+
+  const doneTask = async () => {
+
+    if(valueTempInputShop === '') {
+      alert("Недопустимое значение магазина");
+  
+    } else if(valueTempInputDate < 1 || valueTempInputDate === '') {
+      alert("Недопустимая дата");
+  
+    } else if(valueTempInputPrice < 1) {
+      alert("Недопустимое значение цены");
+  
+    } else {
+      allTasks[tempIndex].shop = valueTempInputShop;
+      allTasks[tempIndex].date = valueTempInputDate;
+      allTasks[tempIndex].price = valueTempInputPrice;
+      let {_id} = allTasks[tempIndex]
+      await axios.patch('http://localhost:7777/updateTask', {
+        _id,
+        shop: valueTempInputShop,
+        date: valueTempInputDate,
+        price: valueTempInputPrice
+      }).then(res => {
+        setTempIndex(null);  
+      })
+    }
+  }
 
   const addNewTask = async () => {
-    await axios.post('http://localhost:7777/createTask', {
-      shop: valueInputShop,
-      date: valueInputDate,
-      price: valueInputPrice
-    }).then(res => {
-      setTextShop('');
-      setTextDate('');
-      setTextPrice(0);
-      setTasks([ ...allTasks, res.data]);
-    });
+    if(valueInputShop === '' || valueInputDate === '' || valueInputPrice < 1){
+      alert("Недопустимое значение одного из поля");
+    } else {
+      await axios.post('http://localhost:7777/createTask', {
+        shop: valueInputShop,
+        date: valueInputDate,
+        price: valueInputPrice
+      }).then(res => {
+        setTextShop('');
+        setTextDate('');
+        setTextPrice('');
+        setTasks([ ...allTasks, res.data]);
+      });
+  
+    }
   }
 
   const removeTask = async (item, index) => {
-    await axios.delete(`http://localhost:7777/deleteTask?_id=${allTasks[index]._id}`).then(res => {
+    await axios.delete(`http://localhost:7777/deleteTask?_id=${item._id}`).then(res => {
       allTasks.splice(index, 1);
       setTasks([ ...allTasks]);
     });
   }
+
   return (
     <div className= "App">
       <header className= "App-header">
@@ -79,7 +130,9 @@ function App() {
             </div>
             <div className= 'total-amount-style'>
               <p>Итого:</p>
-              <p className= 'total-amount'></p>  
+              <p
+              className= 'total-amount'
+              >{`${counter()} руб.`}</p>  
             </div>
           </div>
         </div>
@@ -92,29 +145,31 @@ function App() {
                   {index === tempIndex ? (
                     <div className= 'task-container'>
                       <textarea
-                        value={item.shop}
+                        value={valueTempInputShop}
                         className = 'shop-textarea'
-                        // onChange = {(e) => setTextShop(e.target.value)}
+                        onChange = {(e) => setTempTextShop(e.target.value)}
                       ></textarea>
                       <input
                         type='date'
-                        value={item.date}
-                        // onChange = {(e) => newDate(e.target.value)}
+                        value={valueTempInputDate}
+                        onChange = {(e) => setTempTextDate(e.target.value)}
                       ></input>
                       <input
                         type= 'number'
-                        value= {item.price}
+                        value= {valueTempInputPrice}
                         className = 'price-input'
-                        // onChange = {(e) => newTextPrice(e.target.value)}
+                        onChange = {(e) => setTempTextPrice(e.target.value)}
                       ></input>
                       <img
                         src= {Done}
                         className = 'imageDone'
-                        // onClick= {() => doneTask()}
+                        alt= 'imageDone'
+                        onClick= {() => doneTask(item, index)}
                       ></img>
                       <img
                         src={Cancel}
                         className = 'imageCancel'
+                        alt= 'imageCancel'
                         onClick= {() => setTempIndex(tempIndex= null)}
                       ></img>
                     </div>
@@ -142,12 +197,14 @@ function App() {
                         <img
                           src= {Edit}
                           className = 'imageEdit'
-                          // onClick={() => editTask()}
+                          alt= 'imageEdit'
+                          onClick= {() => editTask(item, index)}
                         ></img>
                         <img
                           src= {Delete}
                           className = 'imageDelete'
-                          onClick={() => removeTask(item, index)}
+                          alt= 'imageDelete'
+                          onClick= {() => removeTask(item, index)}
                         ></img>
                       </div>
                     </div>
@@ -159,6 +216,8 @@ function App() {
       </main>
     </div>
   );
+
+
 }
 
 export default App;
