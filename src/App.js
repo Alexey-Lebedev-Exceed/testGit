@@ -20,7 +20,7 @@ function App() {
   const [tempIndex, setTempIndex] = useState(null);
 
   const counter = () => {
-    const count = _.reduce(allTasks, function (memo, item) {return memo + item.price}, 0);
+    const count = _.reduce(allTasks, (memo, item) => {return memo + item.price}, 0);
     return count
   }
   
