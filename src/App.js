@@ -2,10 +2,12 @@
 import './App.css';
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import Cancel from './Image/cancel.png'
-import Delete from './Image/delete.png'
-import Done from './Image/done.png'
-import Edit from './Image/edit.png'
+import Cancel from './Image/cancel.png';
+import Delete from './Image/delete.png';
+import Done from './Image/done.png';
+import Edit from './Image/edit.png';
+import _ from 'underscore';
+
 
 function App() {
   const [allTasks, setTasks] = useState([]);
@@ -15,14 +17,11 @@ function App() {
   const [valueTempInputShop, setTempTextShop] = useState('');
   const [valueTempInputDate, setTempTextDate] = useState('');
   const [valueTempInputPrice, setTempTextPrice] = useState('');
-  let [tempIndex, setTempIndex] = useState(null);
+  const [tempIndex, setTempIndex] = useState(null);
 
   const counter = () => {
-    let value = 0;
-    allTasks.map(item => {
-      value += +item.price
-    })
-    return value
+    const count = _.reduce(allTasks, function (memo, item) {return memo + item.price}, 0);
+    return count
   }
   
   useEffect(async () => {
@@ -33,27 +32,20 @@ function App() {
 
   const editTask = ((item, index) => {
     setTempIndex(index);
-    setTempTextShop(item.shop);
-    setTempTextDate(item.date);
-    setTempTextPrice(item.price);
-
-  })
+    const {shop, date, price} = item;
+    setTempTextShop(shop);
+    setTempTextDate(date);
+    setTempTextPrice(price);
+  });
 
   const doneTask = async () => {
-
     if(valueTempInputShop === '') {
       alert("Недопустимое значение магазина");
-  
     } else if(valueTempInputDate < 1 || valueTempInputDate === '') {
       alert("Недопустимая дата");
-  
     } else if(valueTempInputPrice < 1) {
       alert("Недопустимое значение цены");
-  
     } else {
-      allTasks[tempIndex].shop = valueTempInputShop;
-      allTasks[tempIndex].date = valueTempInputDate;
-      allTasks[tempIndex].price = valueTempInputPrice;
       let {_id} = allTasks[tempIndex]
       await axios.patch('http://localhost:7777/updateTask', {
         _id,
@@ -61,13 +53,14 @@ function App() {
         date: valueTempInputDate,
         price: valueTempInputPrice
       }).then(res => {
+        setTasks(res.data);
         setTempIndex(null);  
       })
     }
   }
 
   const addNewTask = async () => {
-    if(valueInputShop === '' || valueInputDate === '' || valueInputPrice < 1){
+    if(!valueInputShop || !valueInputDate || !valueInputPrice){
       alert("Недопустимое значение одного из поля");
     } else {
       await axios.post('http://localhost:7777/createTask', {
@@ -80,7 +73,6 @@ function App() {
         setTextPrice('');
         setTasks([ ...allTasks, res.data]);
       });
-  
     }
   }
 
@@ -90,7 +82,6 @@ function App() {
       setTasks([ ...allTasks]);
     });
   }
-
   return (
     <div className= "App">
       <header className= "App-header">
@@ -130,9 +121,7 @@ function App() {
             </div>
             <div className= 'total-amount-style'>
               <p>Итого:</p>
-              <p
-              className= 'total-amount'
-              >{`${counter()} руб.`}</p>  
+              <p className= 'total-amount'>{`${counter()} руб.`}</p>  
             </div>
           </div>
         </div>
@@ -170,10 +159,10 @@ function App() {
                         src={Cancel}
                         className = 'imageCancel'
                         alt= 'imageCancel'
-                        onClick= {() => setTempIndex(tempIndex= null)}
+                        onClick= {() => setTempIndex(null)}
                       ></img>
                     </div>
-                  ) : (
+                  ) : ( 
                     <div className= 'task-container'>
                       <div className= 'task-container-shop'>
                         <p>{`${index + 1}) Магазин : `}</p>
@@ -216,8 +205,6 @@ function App() {
       </main>
     </div>
   );
-
-
 }
 
 export default App;
