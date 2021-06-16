@@ -3,7 +3,7 @@ const Task = require('../../db/models/task/index');
 
 module.exports.getAllTasks = ((req, res) => {
   if(!req.body){
-    res.send('Данные не верны')
+    res.status(400).send('Данные не верны')
   } else {
     Task.find().then(result => {
       res.send(result);
