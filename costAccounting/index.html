@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="./style.css">
+  <title>Cost Accounting</title>
+</head>
+<body>
+  <div class='main-container'>
+    <div class='general-container'>
+      <h1>Учет моих расходов</h1>
+      <div class='input-container'>
+        <div class='input-block'>
+          <p>Куда было потрачено:</p>
+          <input type="text" placeholder="Куда было потрачено" required id='add-task-shop'>
+        </div>
+        <div class='date'>
+          <input type="date" id='date-task'>
+        </div>
+        <div class='input-block'>
+          <p>Сколько было потрачено:</p>
+          <input type="number" placeholder="Сколько было потрачено" required id='add-task-price'>
+        </div>
+        <button onclick="onClickButton()">Добавить</button>
+      </div>
+      <div class='total-amount-style'>
+        <p>Итого:</p>
+        <p id='total-amount'></p>  
+      </div>
+    </div>
+  </div>
+  <div id='container-task'></div>
+  <script src="./script.js"></script>
+</body>
+</html>

@@ -9,7 +9,8 @@ app.use(cors());
 app.use(express.json());
 app.use("/", apiRoutes);
 
-const url = 'mongodb+srv://Alexey:restart987@cluster0.nsbyf.mongodb.net/TestCostAccounting?retryWrites=true&w=majority'
+const url = 'mongodb+srv://Alexey:restart987@cluster0.nsbyf.mongodb.net/TestCostAccounting?retryWrites=true&w=majority';
+
 mongoose.connect(url, {useNewUrlParser: true, useUnifiedTopology: true});
 
 app.listen(7777, () => {

@@ -2,9 +2,13 @@
 const Task = require('../../db/models/task/index');
 
 module.exports.getAllTasks = ((req, res) => {
-  Task.find().then(result => {
-    res.send(result);
-  });
+  if(!req.body){
+    console.log('Данные не верны')
+  } else {
+    Task.find().then(result => {
+      res.send(result);
+    });
+  }
 });
 
 module.exports.createNewTask = ((req, res) => {
@@ -15,15 +19,23 @@ module.exports.createNewTask = ((req, res) => {
 });
 
 module.exports.changeTaskInfo = ((req, res) => {
-  Task.updateOne({_id: req.body._id}, req.body).then(result => {
-    Task.find({_id: req.body._id}).then(result => {
-      res.send(result)
+  if(!req.body._id || req.body.text && req.body.isCheck){
+    console.log('Данные не верны')
+  } else {
+    Task.updateOne({_id: req.body._id}, req.body).then(result => {
+      Task.find().then(result => {
+        res.send(result)
+      });
     });
-  });
+  }
 });
 
 module.exports.deleteTask = ((req, res) => {
-  Task.deleteOne({_id: req.query._id}).then(result => {
-    res.send(result)
-  });
+  if(!req.body._id){
+    console.log('Данные не верны')
+  } else {
+    Task.deleteOne({_id: req.query._id}).then(result => {
+      res.send(result)
+    });  
+  }
 });
