@@ -20,7 +20,7 @@ module.exports.createNewTask = ((req, res) => {
 
 module.exports.changeTaskInfo = ((req, res) => {
   if(!req.body._id || req.body.text && req.body.isCheck){
-    res.send('Данные не верны')
+    res.status(400).send('Данные не верны')
   } else {
     Task.updateOne({_id: req.body._id}, req.body).then(result => {
       Task.find().then(result => {
@@ -32,7 +32,7 @@ module.exports.changeTaskInfo = ((req, res) => {
 
 module.exports.deleteTask = ((req, res) => {
   if(!req.body._id){
-    res.send('Данные не верны')
+    res.status(400).send('Данные не верны')
   } else {
     Task.deleteOne({_id: req.query._id}).then(result => {
       res.send(result)
